@@ -108,6 +108,9 @@ const Login: React.FC = () => {
         </div>
         
         <p className="text-center mt-8 text-slate-400 text-sm">
+          COLOQUE SEU EMAIL E A SENHA É 123
+        </p>
+        <p className="text-center mt-8 text-slate-400 text-sm">
           © 2026 Treino BCEs. Todos os direitos reservados.
         </p>
       </div>
