@@ -28,6 +28,17 @@ const Layout: React.FC = () => {
                 <p className="text-xs text-slate-400 font-medium">Inglês Pra Viagem</p>
               </div>
             </div>
+
+            {/* Logoff Button (Design Only) */}
+            <button 
+              className="flex items-center gap-2 text-slate-400 hover:text-red-500 font-bold transition-colors text-sm sm:text-base group"
+              aria-label="Sair do sistema"
+            >
+              <span className="hidden sm:inline">Sair</span>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-6 h-6 group-hover:translate-x-1 transition-transform">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
+              </svg>
+            </button>
           </div>
           
           {/* Modern Tabs Navigation */}
