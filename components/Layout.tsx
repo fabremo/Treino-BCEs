@@ -1,7 +1,16 @@
 import React from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 const Layout: React.FC = () => {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
   const linkClasses = ({ isActive }: { isActive: boolean }) =>
     `flex-1 text-center py-4 px-2 text-sm sm:text-base font-bold transition-all duration-300 relative flex items-center justify-center rounded-t-lg ${
       isActive
@@ -29,8 +38,9 @@ const Layout: React.FC = () => {
               </div>
             </div>
 
-            {/* Logoff Button (Design Only) */}
+            {/* Logoff Button */}
             <button 
+              onClick={handleLogout}
               className="flex items-center gap-2 text-slate-400 hover:text-red-500 font-bold transition-colors text-sm sm:text-base group"
               aria-label="Sair do sistema"
             >
