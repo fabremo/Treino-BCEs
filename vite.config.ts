@@ -1,4 +1,3 @@
-
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
@@ -11,6 +10,8 @@ export default defineConfig({
   server: {
     host: true,
     port: 3000,
+    // Fix: allowedHosts expects true or string[]. 'all' is not a valid value.
+    allowedHosts: true, // Permite que o Replit acesse o servidor de desenvolvimento
     hmr: {
       overlay: false
     }
