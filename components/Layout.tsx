@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -58,6 +59,9 @@ const Layout: React.FC = () => {
             </NavLink>
             <NavLink to="/cenarios" className={linkClasses}>
               Cenários
+            </NavLink>
+            <NavLink to="/simulador" className={linkClasses}>
+              Simulador
             </NavLink>
             <NavLink to="/favoritos" className={linkClasses}>
               Favoritos

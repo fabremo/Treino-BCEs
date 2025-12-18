@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
@@ -6,6 +7,7 @@ import Situations from './pages/Situations';
 import SituationDetail from './pages/SituationDetail';
 import Favorites from './pages/Favorites';
 import Settings from './pages/Settings';
+import Simulator from './pages/Simulator';
 import Login from './pages/Login';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './contexts/AuthContext';
@@ -24,6 +26,7 @@ const App: React.FC = () => {
               <Route index element={<Home />} />
               <Route path="cenarios" element={<Situations />} />
               <Route path="cenarios/:slug" element={<SituationDetail />} />
+              <Route path="simulador" element={<Simulator />} />
               <Route path="favoritos" element={<Favorites />} />
               <Route path="configuracoes" element={<Settings />} />
             </Route>

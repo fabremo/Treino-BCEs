@@ -1,49 +1,95 @@
+
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
+import { supabase } from '../lib/supabase';
+import { User } from '@supabase/supabase-js';
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
+  userEmail: string | null;
+  login: (email: string, password: string) => Promise<{ success: boolean; message?: string; code?: string }>;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Verifica se já existe uma sessão salva
-    const storedAuth = localStorage.getItem('auth_token');
-    if (storedAuth === 'fake-jwt-token') {
-      setIsAuthenticated(true);
-    }
-    setIsLoading(false);
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setUser(session?.user ?? null);
+      setIsLoading(false);
+    };
+
+    checkSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
-    // Simula um delay de rede
-    await new Promise(resolve => setTimeout(resolve, 800));
+  const login = async (email: string, password: string): Promise<{ success: boolean; message?: string; code?: string }> => {
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim().toLowerCase(),
+        password: password,
+      });
 
-    if (password === '123') {
-      localStorage.setItem('auth_token', 'fake-jwt-token');
-      setIsAuthenticated(true);
-      return true;
+      if (error) {
+        console.error('Erro Auth Supabase:', error.message);
+        
+        // Identifica o erro de e-mail não confirmado
+        if (error.message.includes('Email not confirmed')) {
+          return { 
+            success: false, 
+            message: 'E-mail não confirmado.',
+            code: 'EMAIL_NOT_CONFIRMED'
+          };
+        }
+        
+        if (error.message.includes('Invalid login credentials')) {
+          return { success: false, message: 'E-mail ou senha incorretos.' };
+        }
+        
+        return { success: false, message: error.message };
+      }
+
+      if (data.user) {
+        return { success: true };
+      }
+      
+      return { success: false, message: 'Falha ao iniciar sessão.' };
+    } catch (err) {
+      return { success: false, message: 'Erro inesperado. Tente novamente.' };
     }
-    return false;
   };
 
-  const logout = () => {
-    localStorage.removeItem('auth_token');
-    setIsAuthenticated(false);
+  const logout = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
   };
 
   if (isLoading) {
-    return null; // Ou um spinner de loading
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-brand-background">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-primary"></div>
+      </div>
+    );
   }
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ 
+      isAuthenticated: !!user, 
+      userEmail: user?.email ?? null, 
+      login, 
+      logout 
+    }}>
       {children}
     </AuthContext.Provider>
   );
