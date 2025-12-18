@@ -3,9 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { useTTSSettings } from '../hooks/useTTSSettings';
 import { useSpeech } from '../hooks/useSpeech';
 
-// FIX: Removed local global declaration of 'aistudio' because it conflicts with the environment-provided 'AIStudio' type.
-// We will use type casting at the call sites to ensure compatibility and avoid redeclaration errors.
-
 const Settings: React.FC = () => {
   const { settings, updateSettings } = useTTSSettings();
   const { speak, isPlaying } = useSpeech();
@@ -14,23 +11,25 @@ const Settings: React.FC = () => {
 
   useEffect(() => {
     const checkKey = async () => {
-      // FIX: Accessing 'aistudio' via type casting to bypass the global declaration conflict and use existing environment definition
       const win = window as any;
-      if (win.aistudio) {
+      if (win.aistudio?.hasSelectedApiKey) {
         const selected = await win.aistudio.hasSelectedApiKey();
         setHasKey(selected);
+      } else {
+        // Se não estiver no ambiente AI Studio, assume que o process.env tem a chave
+        setHasKey(!!process.env.API_KEY);
       }
     };
     checkKey();
   }, []);
 
   const handleSelectKey = async () => {
-    // FIX: Accessing 'aistudio' via type casting to bypass the global declaration conflict
     const win = window as any;
-    if (win.aistudio) {
+    if (win.aistudio?.openSelectKey) {
       await win.aistudio.openSelectKey();
-      // Assume success conforme diretriz para evitar race condition
       setHasKey(true);
+    } else {
+      alert("Configuração manual: Certifique-se de que a API_KEY está nos Secrets do Replit.");
     }
   };
 
@@ -50,7 +49,7 @@ const Settings: React.FC = () => {
   }, []);
 
   const handleTest = () => {
-    speak("Simple English for you.");
+    speak("Communication blocks are great for travel.");
   };
 
   return (
@@ -63,11 +62,13 @@ const Settings: React.FC = () => {
 
       <div className="bg-white p-8 rounded-3xl shadow-card border border-slate-100 space-y-10">
         
-        {/* Gerenciamento de Conta/API */}
+        {/* Conexão Gemini */}
         <div className="space-y-4">
           <div className="flex flex-col gap-1">
-            <h3 className="text-xl font-bold text-slate-800">Conexão Gemini Cloud</h3>
-            <p className="text-sm text-slate-500">Para produção, conecte seu projeto do Google Cloud para gerenciar limites e faturamento.</p>
+            <h3 className="text-xl font-bold text-slate-800">Conexão Inteligência Artificial</h3>
+            <p className="text-sm text-slate-500">
+              O simulador utiliza o Gemini Pro para correções em tempo real.
+            </p>
           </div>
           
           <div className={`p-6 rounded-2xl border-2 transition-all ${hasKey ? 'bg-emerald-50 border-emerald-100' : 'bg-amber-50 border-amber-100'}`}>
@@ -75,7 +76,7 @@ const Settings: React.FC = () => {
               <div className="flex items-center gap-3">
                 <div className={`w-3 h-3 rounded-full ${hasKey ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`}></div>
                 <span className={`font-bold uppercase tracking-wider text-xs ${hasKey ? 'text-emerald-700' : 'text-amber-700'}`}>
-                  {hasKey ? 'Conectado a um Projeto' : 'Chave não configurada'}
+                  {hasKey ? 'Sistema Pronto' : 'Aguardando Configuração'}
                 </span>
               </div>
               <a 
@@ -99,7 +100,7 @@ const Settings: React.FC = () => {
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1 1 21.75 8.25Z" />
               </svg>
-              {hasKey ? 'Trocar Conta / Chave API' : 'Configurar Chave API'}
+              {hasKey ? 'Atualizar Conexão' : 'Conectar Agora'}
             </button>
           </div>
         </div>

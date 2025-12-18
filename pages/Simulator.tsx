@@ -59,7 +59,6 @@ const Simulator: React.FC = () => {
 
   const handleSendMessage = async (text: string) => {
     if (!text.trim()) return;
-
     if (isListening) stopListening();
 
     const userMessage: Message = { role: 'user', text };
@@ -69,7 +68,7 @@ const Simulator: React.FC = () => {
     setIsTyping(true);
 
     try {
-      // Cria instância nova no momento do envio para capturar a chave atualizada de process.env.API_KEY
+      // Cria instância nova para garantir uso da chave mais recente
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
@@ -92,14 +91,17 @@ const Simulator: React.FC = () => {
     } catch (error: any) {
       console.error("Gemini Error:", error);
       
-      let errorMessage = "Connection error. --- Erro de conexão. Tente de novo!";
-      
-      // Se a chave não for encontrada ou for inválida, orienta o usuário
       if (error.message?.includes("Requested entity was not found") || error.message?.includes("API key")) {
-        errorMessage = "API key issue. Please check your settings. --- Erro na chave de API. Por favor, verifique a aba de Ajustes!";
+        const win = window as any;
+        if (win.aistudio?.openSelectKey) {
+           await win.aistudio.openSelectKey();
+           setMessages(prev => [...prev, { role: 'model', text: "API key updated. Please send your message again! --- Chave de API atualizada. Envie sua mensagem novamente!" }]);
+        } else {
+           setMessages(prev => [...prev, { role: 'model', text: "API key missing or invalid. Check your Secrets! --- Chave de API ausente ou inválida. Verifique os Secrets do Replit!" }]);
+        }
+      } else {
+        setMessages(prev => [...prev, { role: 'model', text: "Connection error. Please try again later. --- Erro de conexão. Tente novamente em instantes!" }]);
       }
-
-      setMessages(prev => [...prev, { role: 'model', text: errorMessage }]);
     } finally {
       setIsTyping(false);
     }
@@ -115,7 +117,6 @@ const Simulator: React.FC = () => {
 
   return (
     <div className="flex flex-col h-[calc(100vh-12rem)] max-w-2xl mx-auto bg-white rounded-3xl shadow-card overflow-hidden border border-slate-100">
-      {/* Header */}
       <div className="bg-brand-dark p-4 flex items-center gap-3 border-b border-slate-700">
         <div className="w-10 h-10 bg-brand-accent rounded-full flex items-center justify-center text-xl shadow-lg">🤖</div>
         <div>
@@ -124,7 +125,6 @@ const Simulator: React.FC = () => {
         </div>
       </div>
 
-      {/* Chat Area */}
       <div className="flex-grow overflow-y-auto p-4 space-y-4 bg-slate-50">
         {messages.map((msg, idx) => {
           const parts = msg.text.split('---');
@@ -178,7 +178,6 @@ const Simulator: React.FC = () => {
         <div ref={chatEndRef} />
       </div>
 
-      {/* Input */}
       <div className="p-4 bg-white border-t border-slate-100 space-y-2">
         {isListening && (
           <div className="flex items-center gap-2 px-3 py-1 bg-red-50 text-red-600 rounded-full w-fit mx-auto mb-2 animate-pulse border border-red-100">
