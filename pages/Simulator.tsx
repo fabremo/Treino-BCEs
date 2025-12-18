@@ -43,7 +43,6 @@ const Simulator: React.FC = () => {
 
   const cleanTextForSpeech = (text: string) => {
     const englishPart = text.split('---')[0];
-    // Remove negritos ou marcações se a IA enviar por engano
     return englishPart.replace(/\*\*/g, '').replace(/\*/g, '').trim();
   };
 
@@ -63,16 +62,18 @@ const Simulator: React.FC = () => {
 
     if (isListening) stopListening();
 
-    const newMessages = [...messages, { role: 'user', text }];
-    setMessages(newMessages as any);
+    const userMessage: Message = { role: 'user', text };
+    const currentMessages = [...messages, userMessage];
+    setMessages(currentMessages);
     setInput('');
     setIsTyping(true);
 
     try {
+      // Cria instância nova no momento do envio para capturar a chave atualizada de process.env.API_KEY
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
-        contents: newMessages.map(m => ({
+        contents: currentMessages.map(m => ({
           role: m.role,
           parts: [{ text: m.text }]
         })),
@@ -85,12 +86,20 @@ const Simulator: React.FC = () => {
       setMessages(prev => [...prev, { role: 'model', text: aiText }]);
       
       const cleanAiText = cleanTextForSpeech(aiText);
-      setActiveMessageId(messages.length + 1);
+      setActiveMessageId(currentMessages.length);
       speak(cleanAiText);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error("Gemini Error:", error);
-      setMessages(prev => [...prev, { role: 'model', text: "Connection error. --- Erro de conexão. Tente de novo!" }]);
+      
+      let errorMessage = "Connection error. --- Erro de conexão. Tente de novo!";
+      
+      // Se a chave não for encontrada ou for inválida, orienta o usuário
+      if (error.message?.includes("Requested entity was not found") || error.message?.includes("API key")) {
+        errorMessage = "API key issue. Please check your settings. --- Erro na chave de API. Por favor, verifique a aba de Ajustes!";
+      }
+
+      setMessages(prev => [...prev, { role: 'model', text: errorMessage }]);
     } finally {
       setIsTyping(false);
     }
