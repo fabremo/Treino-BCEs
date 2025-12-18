@@ -8,8 +8,8 @@ export default defineConfig({
     'process.env.API_KEY': JSON.stringify(process.env.API_KEY || '')
   },
   server: {
-    host: true,
-    port: 3000,
+    host: '0.0.0.0',
+    port: 5000,
     // Fix: allowedHosts expects true or string[]. 'all' is not a valid value.
     allowedHosts: true, // Permite que o Replit acesse o servidor de desenvolvimento
     hmr: {
